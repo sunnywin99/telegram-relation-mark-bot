@@ -1,6 +1,6 @@
 ---
 name: telegram-relation-mark-bot
-description: Background and feature spec for telegram-relation-mark-bot — a Python service that lets the user text a Telegram bot one line ("對象 分類 內容", space-separated) and have it append a row to the matching "對象-分類" tab of a shared Google Sheet, creating that tab on first use. Records the user's interactions with family/friends (太太/大女/小女/我/其它). Use when the user references "telegram-relation-mark-bot", 「親友互動記錄」, RelationPeopleMarkbot, asks to continue/resume work on it, or asks what this project is / where it lives.
+description: Background and feature spec for telegram-relation-mark-bot — a Python service that lets the user text a Telegram bot one line ("代碼 分類 內容", space-separated, 代碼 being a short code that maps to a full object name) and have it append a row to the matching "對象-分類" tab (using the full name, not the code) of a shared Google Sheet, creating that tab on first use. Records the user's interactions with family/friends (t=太太/1=大女/2=小女/m=我/o=其它). Use when the user references "telegram-relation-mark-bot", 「親友互動記錄」, RelationPeopleMarkbot, asks to continue/resume work on it, or asks what this project is / where it lives.
 user-invocable: true
 ---
 
@@ -12,9 +12,13 @@ Base directory for this skill: `C:\claude_practicefiles\.claude\skills\telegram-
 
 A small Python backend that bridges Telegram and Google Sheets: the user
 texts a dedicated Telegram bot one line, space-separated —
-`對象 分類 內容` (e.g. `太太 沒想到 我竟然沒有想到今天是我太太的生日`) — and
-the bot finds (or creates) a tab named `對象-分類` inside one shared Google
-Sheet and appends a row (date/time, content). This is the sibling project to
+`代碼 分類 內容` (e.g. `t 沒想到 我竟然沒有想到今天是我太太的生日`, where 代碼
+is a short code: `t`=太太, `1`=大女, `2`=小女, `m`=我, `o`=其它 — changed from
+plain-Chinese object names to these codes in commit `2536559`, 2026-08-29,
+purely to make Telegram input faster) — and the bot maps 代碼 to the full
+Chinese object name, then finds (or creates) a tab named `對象-分類` (always
+the full name, never the code) inside one shared Google Sheet and appends a
+row (date/time, content). This is the sibling project to
 [[project_telegram_calendar_bot]] and [[project_telegram_heartsutra_bot]] —
 same architecture pattern (Telegram long polling + Render + a Google OAuth
 Desktop client), but the distinctive piece here is **dynamic tab
@@ -47,19 +51,23 @@ new one is needed.
   changelog, this file is just an orientation summary.
 
 **Always re-read `bot.py` and run `git log --oneline` in the repo before
-making changes** — this file is a snapshot as of commit `6ec553c`
-(2026-08-27) and the code may have moved on since.
+making changes** — this file is a snapshot as of commit `2536559`
+(2026-08-29) and the code may have moved on since.
 
 ## Message format and design decisions
 
-- One line, space-separated: `text.split(maxsplit=2)` → `對象`, `分類`,
+- One line, space-separated: `text.split(maxsplit=2)` → `代碼`, `分類`,
   `內容` (內容 keeps everything after the second space, including any
   further spaces).
-- **對象 is a fixed whitelist** hardcoded as `OBJECT_WHITELIST` in `bot.py`
-  (currently `太太`, `大女`, `小女`, `我`, `其它`) — the user said this list
-  will probably grow later but should stay a deliberate code change (part of
-  the standing 6-step workflow), not free text. A message with an
-  unrecognized 對象 is rejected with an error reply and nothing is written.
+- **代碼 is a fixed short-code lookup table** hardcoded as `OBJECT_CODE_MAP`
+  in `bot.py` (currently `{"t": "太太", "1": "大女", "2": "小女", "m": "我",
+  "o": "其它"}`) — object names were the raw input until commit `2536559`
+  (2026-08-29), when the user asked to shorten Telegram-side typing to a
+  single character per object while keeping the spreadsheet's tab names in
+  full Chinese. The user said this table will probably grow later but should
+  stay a deliberate code change (part of the standing 6-step workflow), not
+  free text. A message with an unrecognized 代碼 is rejected with an error
+  reply and nothing is written.
 - **分類 is fully free text** — the user explicitly chose this
   ("完全自由輸入（推薦）") over having to pre-register categories. The bot
   never validates it; the tab name `對象-分類` is sanitized
@@ -74,10 +82,11 @@ making changes** — this file is a snapshot as of commit `6ec553c`
 ## Architecture
 
 ```
-Telegram user ──("對象 分類 內容", space-separated)──> bot.py (long polling, python-telegram-bot)
+Telegram user ──("代碼 分類 內容", space-separated)──> bot.py (long polling, python-telegram-bot)
                                                             │
-                                                            ├─ split into 對象/分類/內容
-                                                            ├─ 對象 in OBJECT_WHITELIST? no → reply error, stop
+                                                            ├─ split into 代碼/分類/內容
+                                                            ├─ 代碼 in OBJECT_CODE_MAP? no → reply error, stop
+                                                            ├─ 對象 = OBJECT_CODE_MAP[代碼] (full Chinese name)
                                                             ├─ sheet_name = sanitize("對象-分類")
                                                             ├─ sheet_name in spreadsheet already? no → batchUpdate addSheet + write header row
                                                             └─ Google Sheets API (googleapiclient)
@@ -150,8 +159,9 @@ up manually, same as the sibling bots.
    [[feedback_telegram_relation_mark_bot_workflow]], mirroring the sibling
    bots' workflow):
    1. Edit the code (`bot.py`/`get_refresh_token.py`/`README.md`) — a new
-      對象 goes into `OBJECT_WHITELIST` here; a new 分類 needs no code change
-      at all, the user just starts using it in Telegram.
+      對象 goes into `OBJECT_CODE_MAP` here (pick an unused short code); a new
+      分類 needs no code change at all, the user just starts using it in
+      Telegram.
    2. `git commit` + `git push` (telegram-relation-mark-bot repo).
    3. Confirm Render picked up the new commit and redeployed cleanly (check
       the Render dashboard's Deploy/Logs tab) — pushing to GitHub does not
