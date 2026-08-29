@@ -18,7 +18,12 @@ plain-Chinese object names to these codes in commit `2536559`, 2026-08-29,
 purely to make Telegram input faster) — and the bot maps 代碼 to the full
 Chinese object name, then finds (or creates) a tab named `對象-分類` (always
 the full name, never the code) inside one shared Google Sheet and appends a
-row (date/time, content). This is the sibling project to
+row (date/time, content). **The confirmation reply, however, echoes back the
+short code, not the full name** (`已記錄到「m-沒想到」：...`, commit
+`d37fc01`, 2026-08-29) — the user found it inconsistent that they'd type `m`
+but see `我` in the reply, and asked for the reply to match their input.
+Only the reply string changed; the actual sheet tab name (`我-沒想到`) is
+untouched, so the two now deliberately differ. This is the sibling project to
 [[project_telegram_calendar_bot]] and [[project_telegram_heartsutra_bot]] —
 same architecture pattern (Telegram long polling + Render + a Google OAuth
 Desktop client), but the distinctive piece here is **dynamic tab
@@ -51,7 +56,7 @@ new one is needed.
   changelog, this file is just an orientation summary.
 
 **Always re-read `bot.py` and run `git log --oneline` in the repo before
-making changes** — this file is a snapshot as of commit `2536559`
+making changes** — this file is a snapshot as of commit `d37fc01`
 (2026-08-29) and the code may have moved on since.
 
 ## Message format and design decisions
