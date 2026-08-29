@@ -155,7 +155,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("寫入 Google 試算表時發生錯誤，稍後再試一次。")
         return
 
-    await update.message.reply_text(f"已記錄到「{sheet_name}」：{content}")
+    await update.message.reply_text(f"已記錄到「{code}-{category}」：{content}")
 
 
 def _run_health_check_server():
