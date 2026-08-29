@@ -40,17 +40,25 @@ PORT = int(os.environ.get("PORT", "8080"))
 TIMEZONE = ZoneInfo("Asia/Taipei")
 SHEETS_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-# 對象清單目前寫死在這裡。以後要新增對象，改這一行、commit/push、確認 Render
-# 重新部署即可（六步驟流程的一部分），不需要改其他邏輯。
-OBJECT_WHITELIST = ["太太", "大女", "小女", "我", "其它"]
+# 對象輸入用短代碼，但試算表分頁名稱仍用完整中文名。以後要新增對象，
+# 改這個對照表、commit/push、確認 Render 重新部署即可（六步驟流程的一部分），
+# 不需要改其他邏輯。
+OBJECT_CODE_MAP = {
+    "t": "太太",
+    "1": "大女",
+    "2": "小女",
+    "m": "我",
+    "o": "其它",
+}
 
 HEADER_ROW = ["日期時間", "內容"]
 
 USAGE_TEXT = (
-    "傳一行文字給我，格式是「對象 分類 內容」，中間用空白分開，例如：\n"
-    "太太 沒想到 我竟然沒有想到今天是我太太的生日\n\n"
-    f"對象目前只接受：{'、'.join(OBJECT_WHITELIST)}\n"
-    "分類可以自由輸入（例如「不舒服」「笑話」），我會自動在試算表建立對應的工作表分頁。"
+    "傳一行文字給我，格式是「代碼 分類 內容」，中間用空白分開，例如：\n"
+    "t 沒想到 我竟然沒有想到今天是我太太的生日\n\n"
+    "對象代碼目前只接受：" +
+    "、".join(f"{code}={name}" for code, name in OBJECT_CODE_MAP.items()) +
+    "\n分類可以自由輸入（例如「不舒服」「笑話」），我會自動在試算表建立對應的工作表分頁。"
 )
 
 # Google 試算表分頁名稱不能包含這些字元，也不能超過 100 字
@@ -125,13 +133,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     parts = text.split(maxsplit=2)
     if len(parts) < 3:
-        await update.message.reply_text("格式不對，少了對象、分類或內容。\n\n" + USAGE_TEXT)
+        await update.message.reply_text("格式不對，少了代碼、分類或內容。\n\n" + USAGE_TEXT)
         return
 
-    obj, category, content = parts
-    if obj not in OBJECT_WHITELIST:
+    code, category, content = parts
+    obj = OBJECT_CODE_MAP.get(code)
+    if obj is None:
         await update.message.reply_text(
-            f"「{obj}」不在對象清單裡。\n\n" + USAGE_TEXT
+            f"「{code}」不是有效的對象代碼。\n\n" + USAGE_TEXT
         )
         return
 
