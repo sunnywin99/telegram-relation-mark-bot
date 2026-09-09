@@ -41,6 +41,18 @@ new one is needed.
   `srv-da7r54psrm7s73dbs5r0`, region Oregon). Kept alive on the free tier
   via an UptimeRobot HTTP(s) monitor hitting the Flask health-check route
   (`/`) every 5 minutes, same account/pattern as the sibling bots' monitors.
+- **2026-09-09: self-hosting support added.** Render's free 750hr/month pool
+  ran out (see [[project_third_desktop_server_plan]]), so the user is
+  migrating the always-on Telegram bots to a self-hosted **third desktop PC**
+  kept running at home. `bot.py` now calls `load_dotenv()` (added
+  `python-dotenv` to `requirements.txt`) so a local `.env` file (copy
+  `.env.example`) works alongside Render's existing dashboard env vars — no
+  behavior change on Render itself. New `run_bot.ps1` (logs to `bot.log`) and
+  `install_task.ps1` (Windows Scheduled Task as `SYSTEM`, `AtStartup`,
+  auto-restart) support running it persistently there. **Migration not
+  complete yet** — Render is still live production; don't assume it moved
+  until told the third desktop is confirmed running and Render's service has
+  been stopped (same-token long-polling conflict otherwise).
 - Development happens on 第二台桌電 — see [[machine_setup]].
 - Telegram bot: **RelationPeopleMarkbot**, a fresh dedicated bot created via
   @BotFather specifically for this project (per the user's established
