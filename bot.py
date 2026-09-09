@@ -3,14 +3,14 @@
 自動在 Google 試算表裡找（或建立）對應的「對象-分類」工作表分頁，寫入一列。
 Render 免費方案保活用的健康檢查網址也在這裡。
 
-環境變數（Render 的 Environment 頁籤設定）：
+環境變數（Render 的 Environment 頁籤設定，或本機/自架伺服器同資料夾的 .env 檔，見 .env.example）：
     TELEGRAM_BOT_TOKEN        跟 @BotFather 申請的 token
     ALLOWED_TELEGRAM_USER_ID  只允許這個 Telegram user id 的訊息被記錄（防止別人亂用）
     GOOGLE_CLIENT_ID          get_refresh_token.py 印出來的值
     GOOGLE_CLIENT_SECRET      get_refresh_token.py 印出來的值
     GOOGLE_REFRESH_TOKEN      get_refresh_token.py 印出來的值
     GOOGLE_SPREADSHEET_ID     get_refresh_token.py 印出來的試算表 ID
-    PORT                      Render 會自動設定，本機測試預設 8080
+    PORT                      Render 會自動設定；自架伺服器同時跑多個 bot 時要各自設不同埠號
 """
 import logging
 import os
@@ -19,12 +19,15 @@ import threading
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from dotenv import load_dotenv
 from flask import Flask
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from telegram import Update
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
