@@ -1,0 +1,13 @@
+name = "telegram-relation-mark-bot"
+main = "src/index.js"
+compatibility_date = "2026-09-15"
+workers_dev = true
+
+[vars]
+# 只處理這個 Telegram user id 的訊息（不是機密；Bot Token 和 Google 憑證放在 Cloudflare 後台的秘密）
+ALLOWED_TELEGRAM_USER_ID = "8735906224"
+# 「親友互動記錄」的 ID。單獨拿到 ID 也打不開，要有 Google 授權才讀寫得到
+GOOGLE_SPREADSHEET_ID = "1jgegd-7zTvEwyP14E26jpRTEZ1QPRGljI2iE5RE6MJw"
+
+[observability]
+enabled = true
