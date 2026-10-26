@@ -45,7 +45,8 @@ tab name (`我-沒想到`) deliberately differ. The distinctive piece is
 - Google Sheet: **「親友互動記錄」** in the user's own Google account, id
   `1jgegd-7zTvEwyP14E26jpRTEZ1QPRGljI2iE5RE6MJw`. Tabs named `對象-分類`,
   created on first use with header row `日期時間 / 內容`.
-- Changelog: the telegram-relation-mark-bot-history repo and its Artifact —
+- Changelog: the telegram-relation-mark-bot-history repo and its Artifact
+  https://claude.ai/artifact/DDJDYoTWWJLHc1KNV5gdfy —
   authoritative; this file is an orientation summary.
 
 **Always re-read `src/` and run `git log --oneline` before making changes.**
@@ -107,5 +108,5 @@ step at a time.
       fast-forward `master`; Cloudflare auto-deploys.
    3. Add an `ENTRIES` item to telegram-relation-mark-bot-history's
       `index.html` (plain Traditional Chinese), commit/push, republish its
-      Artifact.
+      Artifact: https://claude.ai/artifact/DDJDYoTWWJLHc1KNV5gdfy
    4. Update this `SKILL-backup.md` (commit + push).
